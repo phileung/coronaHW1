@@ -7,8 +7,8 @@
 -- Your code here
 --print("Hello World");
 scrollSpeed = 10;
-rocknum = 5;
-craternum = 5;
+rocknum = 1;
+craternum = 1;
 count = 0;
 jumpflag = true;
 --physics
@@ -31,35 +31,60 @@ opos = car.y;
 carDied = false;
 physics.addBody(car,"dynamic",{friction=0, bounce = 0.1});
 --ground
-local ground = display.newRect(car.x, car.y+20,100,2)
+local ground = display.newRect(car.x, car.y+20,100,0)
 ground.name = "ground";
-ground:setFillColor(0,0,0,0);
+ground:setFillColor(1);
 physics.addBody(ground,"static",{friction=0});
+
+local win = display.newImage("jpg/win2.png");
+win.x = background.x + 3590;
+win.y = background.y+55;
+
 --traps
 local traps = {};
 --crater
-for i=1,craternum do
+--for i=1,craternum do
+	i=1;
 	local crater = display.newImage("jpg/crater0.png");
-	crater.x = background.x + 100 + i*math.random(450,1250);
-	crater.y = background.y + 41;
+	crater.x = background.x + 500;
+	crater.y = background.y + 42;
 	crater.name = "obstacle";
 	physics.addBody(crater,"static",{friction=0});
 	traps[i] = crater;
-end
---rocks
-for i=craternum,craternum+rocknum do
-	rock = display.newImage("jpg/rock0.png");
-	rock.x = background.x + 100 + 2*(i-1)*math.random(150,250);
+	i = i+1;
+
+	local rock = display.newImage("jpg/rock0.png");
+	rock.x = background.x + 350;
 	rock.y = background.y + 20;
 	rock.name = "obstacle";
 	physics.addBody(rock,"static",{friction=0});
 	traps[i] = rock;
+	i=i+1;
+
+	local crater = display.newImage("jpg/crater0.png");
+	crater.x = background.x + 1500;
+	crater.y = background.y + 42;
+	crater.name = "obstacle";
+	physics.addBody(crater,"static",{friction=0});
+	traps[i] = crater;
+	i = i+1;	
+	c = i;
+--end
+--rocks
+for a=c,c+3 do
+	local rock = display.newImage("jpg/rock0.png");
+	rock.x = background.x + 2500 + (c-a)*50;
+	rock.y = background.y + 20;
+	rock.name = "obstacle";
+	physics.addBody(rock,"static",{friction=0});
+	traps[i] = rock;
+	i = i+1;
 end
 
 local function jump(obj)
-	obj:applyForce(0,-10,obj.x,obj.y)
-	ground:applyForce(0,-10,ground.x,ground.y)
-	--print("jump!!!!!")
+	obj:applyForce(0,-6,obj.x,obj.y+5)
+	print("jump!!!!!")
+	jumpflag = false;
 end
 
 --bullet fly
@@ -82,31 +107,32 @@ end
 --collision
 local function onCollision(self, event)
 	--kill car
-	print(self.name);
+	--print(self.name);
 	if (self.name == "car" and event.other.name == "obstacle") then
 		carDied = true;
  		local tm = timer.performWithDelay(1, removeObj, 1)
  		tm.params = {param1 = self}
  	end
- 	--local params = self.source.params
- 	--give car jumpflag
+ 	--bullet hit obstacles
  	if (self.name == "flybullet" and event.other.name == "obstacle") then
- 		print("hitrock")
+ 		--print("hitrock")
  		local tm1 = timer.performWithDelay(1, removeObj, 1)
  		tm1.params = {param1 = self}
  		local tm2 = timer.performWithDelay(1, removeObj, 1)
  		tm2.params = {param1 = event.other}
- 		--jumpflag = true;
- 		--print("ground give jump")
+ 	end
+ 	if (self.name == "car" and event.other.name == "ground") then
+ 		if(jumpflag==false) then
+ 		jumpflag = true;
+ 		print("ground,give jumpable");
+ 	end
  	end
  end
 
 function fireshooot(event)
+	print("fire")
 	if (car ~= nil) and (car.x ~= nil) then
 		bullet = display.newRect(car.x+60, car.y,10,3);
-		--bullet = display.newImage("jpg/car2.png");
-		--bullet.x = car.x + 150;
-		--bullet.y = car.y;
 		bullet.name = "flybullet";
 		physics.addBody(bullet,"dynamic",{density=1,friction=0});
 		bullet.gravityScale = 0;
@@ -121,20 +147,18 @@ end
 
 local function handleSwipe(event)
 	--print("swipe");
-	--print(jumpflag);
+	print(jumpflag);
 	if (event.phase == "moved" and jumpflag==true) then
-		--print("what?")
+
 		dy = event.y - event.yStart;
-		if(dy < -5) then
+		if(dy < -1) then
 			jumpflag = false;
 			jump(event.target);
-			velocity = car:getLinearVelocity();
-			--print("jumped");
-			--print(velocity);
+			print("jumped");
 		end
 	elseif (event.phase == "ended" or event.phase == "cancelled") then
-		jumpflag = true
-		--print("canjump")
+		jumpflag = false
+		print("finishjump")
 	end
 	return true
 end
@@ -147,27 +171,6 @@ local drawTraps = function( event)
 	end
 end
 
- function onGlobalCollision(event)
- 	--print(event.object1.name)
- 	--print(event.object2.name)
-
- 	if(event.object1.name == "flybullet") then
- 		print("hit")
- 		if(event.object2.name == "obstacle") then
- 			local tm1 = timer.performWithDelay(200, removeObj, 1)
- 			tm1.params = {param1 = event.object1}
- 			local tm2 = timer.performWithDelay(200, removeObj, 1)
- 			tm2.params = {param1 = event.object2}
- 		end
- 	elseif(event.object2.name == "flybullet") then
- 		if(event.object1.name == "obstacle") then
- 			local tm1 = timer.performWithDelay(200, removeObj, 1)
- 			tm1.params = {param1 = event.object1}
- 			local tm2 = timer.performWithDelay(200, removeObj, 1)
- 			tm2.params = {param1 = event.object2}
- 		end
- 	end
- end
 --background
 function bgupdate( event )
 	background.x = background.x - 4;
@@ -181,5 +184,3 @@ Runtime:addEventListener("tap", fireshooot);
 car:addEventListener("touch",handleSwipe);
 car.collision = onCollision;
 car:addEventListener("collision",car);
---Runtime:addEventListener("collision",onGlobalCollision);
---Runtime:addEventListener("collision", onCollision)
