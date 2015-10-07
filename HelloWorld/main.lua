@@ -6,7 +6,7 @@
 
 -- Your code here
 --print("Hello World");
-scrollSpeed = 10;
+--scrollSpeed = 10;
 rocknum = 1;
 craternum = 1;
 count = 0;
@@ -178,6 +178,12 @@ function bgupdate( event )
 
 	-- body
 end
+local square = display.newRect(0,0,100,100)
+local w,h = display.contentWidth, display.contentHeight;
+local listener1 = function( obj )
+	print("Transition 1 completed on object: " .. tostring(obj))
+end
+transition.to(square,{time=15000,alpha=0,x=w/2,y=h/4, onComplete=listener1});
 Runtime:addEventListener("enterFrame", bgupdate);
 Runtime:addEventListener("enterFrame", drawTraps);
 Runtime:addEventListener("tap", fireshooot);
